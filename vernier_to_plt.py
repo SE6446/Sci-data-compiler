@@ -32,8 +32,6 @@ class CsvToPlt():
     
 
     def list_to_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True):
-        def func(x, a, b, c):
-            return a * np.exp(-b * x) + c
         x_axis = []
         y_axis = []
         for i in self.csv_list:
@@ -48,17 +46,18 @@ class CsvToPlt():
         if lobf:
             a,b = np.polyfit(x,y,1)
             plt.plot(x,a*x+b)
+        #*curve of best fit
         elif cobf:
-            #! Not implemented
+            def func(x, a, b, c):
+                return a * np.exp(-b * x) + c
             #raise NotImplementedError()
             # Plot the actual data  
-            plt.plot(x, y, ".", label="Data")
+            plt.plot(x, y, ".",)
 
-            # The actual curve fitting happens here
             optimizedParameters, pcov = opt.curve_fit(func, x, y)
 
             # Use the optimized parameters to plot the best fit
-            plt.plot(x, func(x, *optimizedParameters), label="fit")
+            plt.plot(x, func(x, *optimizedParameters))
         plt.title(title)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
@@ -129,5 +128,5 @@ class CsvToPlt():
 
 
 if __name__ == "__main__":
-    freefall = CsvToPlt("MT\Bouncing_ball - Copy.csv")
-    freefall.compile_all_data("Bouncing_ball")
+    freefall = CsvToPlt(input("Input CSV file: "))
+    freefall.compile_all_data(input("Input name of output file"))
