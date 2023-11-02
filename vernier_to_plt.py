@@ -119,7 +119,4 @@ class CsvToPlt():
 
 if __name__ == "__main__":
     freefall = CsvToPlt("MT\Bouncing_ball - Copy.csv")
-    #freefall.list_to_scatter("Positon over time graph of a bouncing ball","time (s)","Position (m)",1,save=True,save_name="PT-bouncing-ball-copy",cobf=True)
-    #freefall.list_to_scatter("Velocity over time graph for a bouncing ball","time (s)","Velocity (ms^-1)",2)
-    #freefall.list_to_scatter("Accleration over time graph for a bouncing ball","time (s)","acceleration (ms^-2)",3)
     freefall.compile_all_data("Bouncing_ball")
