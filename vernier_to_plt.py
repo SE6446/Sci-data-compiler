@@ -5,13 +5,19 @@ import pandas
 from math import isnan
 from statistics import mean
 import json
+import re
+
 class CsvToPlt():
     def __init__(self,csv_path:str) -> None:
         self.csv_list = self.__csv_to_list(csv_path)
 
     def __csv_to_list(self,csv_path) -> list:
         dataframes = pandas.read_csv(csv_path)
-        self.columns = dataframes.columns
+        columns = dataframes.columns
+        new_columns = []
+        for i in range(0,len(columns)):
+            new_columns.append(re.sub(r"Data set .:",r'',columns[i]))
+        self.columns = new_columns           
         data = dataframes.values
         data2 = []
         
@@ -60,12 +66,16 @@ class CsvToPlt():
         if show:
             #* show figure
             plt.show()
+
+
     def find_mean_and_range(self,idx):
         column = []
         for i in self.csv_list:
             if not isnan(i[self.columns[idx]]):
                 column.append(i[self.columns[idx]])
         return mean(column), max(column) - min(column)
+    
+
     def compile_all_data(self,output_file):
         file = open(output_file+".🧪.json","w")
         temp_list = []
@@ -93,6 +103,8 @@ class CsvToPlt():
             plt.clf()
             temp_list.append({"figure_location":save_name+".png","mean_and_range":self.find_mean_and_range(i)})
         json.dump([temp_list,self.csv_list],file)
+
+
     def plot_line(self,title:str,x_label,y_label,column_for_y:int = 1,save:bool = False,save_name:str|None = None,show:bool=True):
         x_axis = []
         y_axis = []
@@ -112,8 +124,6 @@ class CsvToPlt():
         if show:
             #* show figure
             plt.show()
-    #TODO Make normal line graph version.
-
 
 
 
