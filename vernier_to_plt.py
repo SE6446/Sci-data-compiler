@@ -16,7 +16,7 @@ class CsvToPlt():
         columns = dataframes.columns
         new_columns = []
         for i in range(0,len(columns)):
-            new_columns.append(re.sub(r"Data set .:",r'',columns[i]))
+            new_columns.append(re.sub(r'Data Set .:','',columns[i]))
         self.columns = new_columns           
         data = dataframes.values
         data2 = []
@@ -76,12 +76,12 @@ class CsvToPlt():
         return mean(column), max(column) - min(column)
     
 
-    def compile_all_data(self,output_file):
+    def compile_all_data(self,output_file,subject:str = "null"):
         file = open(output_file+".🧪.json","w")
         temp_list = []
         for i in range(1,len(self.columns)):
-            save_name = f"column{i}_over_column0"
-            self.list_to_scatter(f"{self.columns[i]} over {self.columns[0]}",
+            save_name = f"{self.columns[i].replace('/','')}_over_{self.columns[0]}"
+            self.list_to_scatter(f"{self.columns[i]} over {self.columns[0]} graph of {subject}",
                                  self.columns[0],
                                  self.columns[i],
                                  i,
