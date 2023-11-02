@@ -1,2 +1,2 @@
 @echo off
-python GUI.py
+python %~dp0\GUI.py
