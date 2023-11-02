@@ -11,6 +11,7 @@ class CsvToPlt():
     def __init__(self,csv_path:str) -> None:
         self.csv_list = self.__csv_to_list(csv_path)
 
+    #TODO Make functionanlity for more than one data set.
     def __csv_to_list(self,csv_path) -> list:
         dataframes = pandas.read_csv(csv_path)
         columns = dataframes.columns
