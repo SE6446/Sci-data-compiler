@@ -8,8 +8,9 @@ import json
 import re
 
 class CsvToPlt():
-    def __init__(self,csv_path:str,split:int=2) -> None:
+    def __init__(self,csv_path:str,split:int=2,abs:bool = False) -> None:
         self.csv_list = self.__csv_to_list(csv_path,split)
+        self.abs = abs
     #TODO Make functionanlity for more than one data set.
     #!####################################################
     #* Pseudo-code
@@ -32,7 +33,7 @@ class CsvToPlt():
             temp_list =[]
             for i in range(0,len(data)):
                 temp_dict = {}
-                row = data[i]
+                row = data[i].astype(np.float_)
                 for j in range(0,len(row)):
                     temp_dict[self.columns[j]] = row[j]
                 j = 0
@@ -43,33 +44,30 @@ class CsvToPlt():
     
 
     def list_to_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0):
-        liste = self.csv_list[dataset]
-        x_axis = []
-        y_axis = []
-        for i in liste:
-            if not isnan(i[self.columns[column_for_y]]):
-                y_axis.append(float(i[self.columns[column_for_y]]))
-                x_axis.append(float(i[self.columns[0]]))
-        #* convert to numpy
-        x = np.array(x_axis)
-        y = np.array(y_axis)
+        x,y = self._dataset_to_coords(dataset,column_for_y)
         plt.scatter(x,y)
         #*line of best fit
-        if lobf:
-            a,b = np.polyfit(x,y,1)
-            plt.plot(x,a*x+b)
-        #*curve of best fit
-        elif cobf:
-            def func(x, a, b, c):
-                return a * np.exp(-b * x) + c
-            #raise NotImplementedError()
-            # Plot the actual data  
-            plt.plot(x, y, ".",)
+        try:
+            if lobf:
+                a,b = np.polyfit(x,y,1)
+                plt.plot(x,a*x+b)
+            #*curve of best fit
+            elif cobf:
+                def func(x, a, b, c):
+                    print(x)
+                    return a * np.exp(-b * x) + c
+                #raise NotImplementedError()
+                # Plot the actual data  
+                plt.plot(x, y, ".",)
 
-            optimizedParameters, pcov = opt.curve_fit(func, x, y)
+                optimizedParameters, pcov = opt.curve_fit(func, x, y)
 
-            # Use the optimized parameters to plot the best fit
-            plt.plot(x, func(x, *optimizedParameters))
+                # Use the optimized parameters to plot the best fit
+                plt.plot(x, func(x, *optimizedParameters))
+        except:
+            print("graph failed, skipping...")
+            plt.clf()
+            return None
         plt.title(title)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
@@ -80,16 +78,20 @@ class CsvToPlt():
             plt.show()
 
 
-    def find_mean_and_range(self,idx):
+    def find_mean_and_range(self,idx,dataset:int = 0):
+        liste = self.csv_list[dataset]
         column = []
-        for i in self.csv_list:
+        for i in liste:
             if not isnan(i[self.columns[idx]]):
                 column.append(i[self.columns[idx]])
-        return mean(column), max(column) - min(column)
+        try:
+            return mean(column), max(column) - min(column)
+        except:
+            print("mean failed... returning none.")
+            return None
     
 
-    def compile_all_data(self,output_file,subject:str = "null"):
-        raise Exception()
+    def compile_all_data(self,output_file,subject:str = "null",dataset:int=0):
         file = open(output_file+".🧪.json","w")
         temp_list = []
         for i in range(1,len(self.columns)):
@@ -101,7 +103,8 @@ class CsvToPlt():
                                  lobf= True,
                                  show= False,
                                  save= True,
-                                 save_name= save_name
+                                 save_name= save_name,
+                                 dataset=dataset
                                  )
             plt.clf()
             self.plot_line(
@@ -111,24 +114,16 @@ class CsvToPlt():
                 i,
                 True,
                 save_name + "_line",
-                False
+                False,
+                dataset
             )
             plt.clf()
             temp_list.append({"figure_location":save_name+".png","mean_and_range":self.find_mean_and_range(i)})
         json.dump([temp_list,self.csv_list],file)
 
 
-    def plot_line(self,title:str,x_label,y_label,column_for_y:int = 1,save:bool = False,save_name:str|None = None,show:bool=True):
-        raise Exception()
-        x_axis = []
-        y_axis = []
-        for i in self.csv_list:
-            if not isnan(i[self.columns[column_for_y]]):
-                y_axis.append(float(i[self.columns[column_for_y]]))
-                x_axis.append(float(i[self.columns[0]]))
-        #* convert to numpy
-        x = np.array(x_axis)
-        y = np.array(y_axis)
+    def plot_line(self,title:str,x_label,y_label,column_for_y:int=1,save:bool = False,save_name:str|None = None,show:bool=True,dataset:int=0):
+        x,y = self._dataset_to_coords(dataset,column_for_y=column_for_y)
         plt.plot(x,y)
         plt.title(title)
         plt.xlabel(x_label)
@@ -138,10 +133,25 @@ class CsvToPlt():
         if show:
             #* show figure
             plt.show()
+    def _dataset_to_coords(self,dataset:int=0,column_for_y:int=1):
+                liste = self.csv_list[dataset]
+                x_axis = []
+                y_axis = []
+                for i in liste:
+                    if not isnan(i[self.columns[column_for_y]]) and self.abs == False:
+                        y_axis.append(float(i[self.columns[column_for_y]]))
+                        x_axis.append(float(i[self.columns[0]]))
+                    elif not isnan(i[self.columns[column_for_y]]) and self.abs == True:
+                        y_axis.append(abs(float(i[self.columns[column_for_y]])))
+                        x_axis.append(abs(float(i[self.columns[0]])))
+                #* convert to numpy
+                x = np.array(x_axis)
+                y = np.array(y_axis)
+                return x,y
 
 
 
 if __name__ == "__main__":
-    freefall = CsvToPlt(input("Input CSV file: "),split=5)
-    freefall.list_to_scatter("test","time","?",1)
-    #freefall.compile_all_data(input("Input name of output file: "))
+    data = CsvToPlt(input("Input CSV file: "),5,True)
+    #freefall.list_to_scatter("test","time","?",dataset=3)
+    data.compile_all_data(input("Input name of output file: "))
