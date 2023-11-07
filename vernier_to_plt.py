@@ -11,13 +11,7 @@ class CsvToPlt():
     def __init__(self,csv_path:str,split:int=2,abs:bool = False) -> None:
         self.csv_list = self.__csv_to_list(csv_path,split)
         self.abs = abs
-    #TODO Make functionanlity for more than one data set.
-    #!####################################################
-    #* Pseudo-code
-    # [{output of code below, up to number of columns in DS},{},{}]
-    # new param = number of columns in 1 DS
-    # split columns into new param
-    #!####################################################
+    #TODO Test the fucking multi dataset, ya melt
     def __csv_to_list(self,csv_path,split:int) -> list:
         dataframes = pandas.read_csv(csv_path)
         columns = dataframes.columns
@@ -40,6 +34,7 @@ class CsvToPlt():
                 temp_list.append(temp_dict)
             i = 0
             new_data.append(temp_list)
+        assert len(new_data) != 0
         return new_data
     
 
@@ -150,7 +145,6 @@ class CsvToPlt():
                 x = np.array(x_axis)
                 y = np.array(y_axis)
                 return x,y
-
 
 
 if __name__ == "__main__":

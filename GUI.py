@@ -1,6 +1,5 @@
 import PySimpleGUI as sg
 import vernier_to_plt
-from time import sleep
 from datetime import date
 from os import chdir
 """
@@ -11,9 +10,9 @@ chdir("..")
 layout  =[
     [sg.Titlebar("Vernier to CSV")],
     [sg.Text("Hello world")],
-    [sg.Text("Please input the location of the CSV file"),sg.InputText("experiment.csv")],
+    [sg.Text("Please input the location of the CSV file"),sg.InputText("../experiment.csv")],
     [sg.Text("Please input the number of columns in the file"),sg.InputText()],
-    [sg.Text("Input name of output file"),sg.InputText((date.today(),"_test"))],
+    [sg.Text("Input name of output file"),sg.InputText((str(date.today())+"_test"))],
     [sg.Text("Input subject of graph E.g a bouncing ball"),sg.InputText()],
     [sg.Checkbox("Use absolute?")],
     [sg.Button("Submit")],
