@@ -2,10 +2,12 @@ import PySimpleGUI as sg
 import vernier_to_plt
 from time import sleep
 from datetime import date
+from os import chdir
 """
 A simple script to run a GUI of my graph maker.
 """
 print("loading window...")
+chdir("..")
 layout  =[
     [sg.Titlebar("Vernier to CSV")],
     [sg.Text("Hello world")],
@@ -27,6 +29,4 @@ while True:
         file_path = values[0].strip('"')
         csv = vernier_to_plt.CsvToPlt(file_path,int(values[1]),values[4])
         csv.compile_all_data(values[2],values[3])
-        window["element"].update("Processed breaking in 5 seconds")
-        sleep(5)
-        break
+        window["element"].update("Processed")

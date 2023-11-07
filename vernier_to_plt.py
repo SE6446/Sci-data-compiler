@@ -50,6 +50,8 @@ class CsvToPlt():
         try:
             if lobf:
                 a,b = np.polyfit(x,y,1)
+                self.gradient = a
+                self.y_intercept = b
                 plt.plot(x,a*x+b)
             #*curve of best fit
             elif cobf:
@@ -119,7 +121,7 @@ class CsvToPlt():
             )
             plt.clf()
             temp_list.append({"figure_location":save_name+".png","mean_and_range":self.find_mean_and_range(i)})
-        json.dump([temp_list,self.csv_list],file)
+        json.dump([temp_list,{"gradient":self.gradient,"y-intercept":self.y_intercept},self.csv_list],file)
 
 
     def plot_line(self,title:str,x_label,y_label,column_for_y:int=1,save:bool = False,save_name:str|None = None,show:bool=True,dataset:int=0):
@@ -152,6 +154,6 @@ class CsvToPlt():
 
 
 if __name__ == "__main__":
-    data = CsvToPlt(input("Input CSV file: "),5,True)
+    data = CsvToPlt(input("Input CSV file: "),3,False)
     #freefall.list_to_scatter("test","time","?",dataset=3)
     data.compile_all_data(input("Input name of output file: "))
