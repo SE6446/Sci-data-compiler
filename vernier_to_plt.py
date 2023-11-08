@@ -6,12 +6,12 @@ from math import isnan
 from statistics import mean
 import json
 import re
-
+from os import mkdir, chdir, getcwd
 class CsvToPlt():
     def __init__(self,csv_path:str,split:int=2,abs:bool = False) -> None:
         self.csv_list = self.__csv_to_list(csv_path,split)
         self.abs = abs
-    #TODO Test the fucking multi dataset, ya melt
+    #TODO Test the fucking multi dataset, ya melt.
     def __csv_to_list(self,csv_path,split:int) -> list:
         dataframes = pandas.read_csv(csv_path)
         columns = dataframes.columns
@@ -68,6 +68,7 @@ class CsvToPlt():
         plt.title(title)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
+        plt.grid()
         if save:
             plt.savefig(save_name+".png")
         if show:
@@ -89,6 +90,11 @@ class CsvToPlt():
     
 
     def compile_all_data(self,output_file,subject:str = "null",dataset:int=0):
+        try:
+            mkdir(f"{getcwd()}\\{output_file}")
+        except:
+            print("Directory already exists...")
+        chdir(f"{getcwd()}\\{output_file}")
         file = open(output_file+".🧪.json","w")
         temp_list = []
         for i in range(1,len(self.columns)):
@@ -115,8 +121,8 @@ class CsvToPlt():
                 dataset
             )
             plt.clf()
-            temp_list.append({"figure_location":save_name+".png","mean_and_range":self.find_mean_and_range(i)})
-        json.dump([temp_list,{"gradient":self.gradient,"y-intercept":self.y_intercept},self.csv_list],file)
+            temp_list.append({"figure_location":getcwd()+save_name+".png","mean_and_range":self.find_mean_and_range(i),"gradient":self.gradient,"y-intercept":self.y_intercept})
+        json.dump([temp_list,self.csv_list],file)
 
 
     def plot_line(self,title:str,x_label,y_label,column_for_y:int=1,save:bool = False,save_name:str|None = None,show:bool=True,dataset:int=0):
@@ -125,6 +131,7 @@ class CsvToPlt():
         plt.title(title)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
+        plt.grid()
         if save:
             plt.savefig(save_name+".png")
         if show:
