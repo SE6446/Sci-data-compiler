@@ -40,25 +40,25 @@ class CsvToPlt():
     def list_to_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r"):
         x,y = self._dataset_to_coords(dataset,column_for_y)
         plt.scatter(x,y,color=colour)
-        #*line of best fit
         try:
+            #*line of best fit
             if lobf:
                 a,b = np.polyfit(x,y,1)
                 self.gradient = a
                 self.y_intercept = b
+                self.function = f"y={a}x+{b}"
                 plt.plot(x,a*x+b,color=colour)
             #*curve of best fit
             elif cobf:
-                print("Warning! curve fitting can cause issues and some graphs may not be correctly drawn")
-                raise NotImplementedError()
-                model = np.poly1d(np.polyfit(x, y, 4))
-                polyline = np.linspace(1, 15, 50)
-                plt.plot(polyline, model(polyline), '--', color='red')
-                plt.show()
+                print("[SYS NOTE] Be sure you have the correct degrees inputted")
+                model = np.poly1d(np.polyfit(x, y, 2))
+                polyline = np.linspace(x[0]-1, x[len(x)-1]+1)
+                plt.plot(polyline, model(polyline), color=colour)
                 self.gradient = np.nan
                 self.y_intercept = np.nan
+                self.function = model
         except:
-            print("graph failed, skipping...")
+            print("[ERROR] graph failed, skipping...")
             plt.clf()
             return None
         plt.title(title)
@@ -81,7 +81,7 @@ class CsvToPlt():
         try:
             return mean(column), max(column) - min(column)
         except:
-            print("mean failed... returning none.")
+            print("[ERROR] mean failed... returning none.")
             return None
     
 
@@ -89,7 +89,7 @@ class CsvToPlt():
         try:
             mkdir(f"{getcwd()}\\{output_file}")
         except:
-            print("Directory already exists...")
+            print("[ERROR] Directory already exists...")
         chdir(f"{getcwd()}\\{output_file}")
         file = open(output_file+".🧪.json","w")
         temp_list = []
@@ -120,7 +120,7 @@ class CsvToPlt():
                 colour
             )
             plt.clf()
-            temp_list.append({"figure_location":getcwd()+save_name+".png","mean_and_range":self.find_mean_and_range(i),"gradient":self.gradient,"y-intercept":self.y_intercept})
+            temp_list.append({"figure_location":getcwd()+save_name+".png","mean_and_range":self.find_mean_and_range(i),"gradient":self.gradient,"y-intercept":self.y_intercept,"function":self.function})
         dump([temp_list,self.csv_list],file)
 
 
@@ -154,6 +154,6 @@ class CsvToPlt():
 
 
 if __name__ == "__main__":
-    data = CsvToPlt(input("Input CSV file: "),3,False)
-    data.list_to_scatter("test","time","?",dataset=1,cobf=True)
+    data = CsvToPlt(input("Input CSV file: "),4,False)
+    data.list_to_scatter("test","time","?",2,dataset=0,cobf=True)
     #data.compile_all_data(input("Input name of output file: "),lobf=False,colour='r')

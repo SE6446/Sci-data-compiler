@@ -15,17 +15,21 @@ layout  =[
     [sg.Text("Input name of output file"),sg.InputText((str(date.today())+"_test"))],
     [sg.Text("Input subject of graph E.g a bouncing ball"),sg.InputText()],
     [sg.Checkbox("Use absolute?")],
+    [sg.Text("Colour of line:")],
+    [sg.Combo(['red','blue','magenta','cyan','yellow','black'],'blue')],
     [sg.Button("Submit")],
     [sg.Text(key="element")]
 ]
-window = sg.Window("Vernier to CSV",layout)
+window = sg.Window("Vernier to CSV",layout,disable_minimize=True,resizable=True)
 print("window loaded.")
 while True:
     event, values = window.read()
-    if event == sg.WIN_CLOSED or event == "Close": # if user closes window or clicks cancel
+    if event == sg.WIN_CLOSED or event == "Close":
         break
     elif event == "Submit":
         file_path = values[0].strip('"')
         csv = vernier_to_plt.CsvToPlt(file_path,int(values[1]),values[4])
-        csv.compile_all_data(values[2],values[3])
+        csv.compile_all_data(values[2],values[3],colour=values[5])
         window["element"].update("Processed")
+    elif event == "debug":
+        print("foobar")
