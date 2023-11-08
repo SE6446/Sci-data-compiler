@@ -1,17 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.optimize as opt
 import pandas
 from math import isnan
 from statistics import mean
-import json
+from json import dump
 import re
 from os import mkdir, chdir, getcwd
 class CsvToPlt():
     def __init__(self,csv_path:str,split:int=2,abs:bool = False) -> None:
         self.csv_list = self.__csv_to_list(csv_path,split)
         self.abs = abs
-    #TODO Test the fucking multi dataset, ya melt.
+
+
     def __csv_to_list(self,csv_path,split:int) -> list:
         dataframes = pandas.read_csv(csv_path)
         columns = dataframes.columns
@@ -22,7 +22,6 @@ class CsvToPlt():
         data = dataframes.values
         new_data = []
         number_ds = int(len(new_columns)/split)
-        iteration = 0
         for h in range(0,number_ds):
             temp_list =[]
             for i in range(0,len(data)):
@@ -34,10 +33,10 @@ class CsvToPlt():
                 temp_list.append(temp_dict)
             i = 0
             new_data.append(temp_list)
-        assert len(new_data) != 0
+        assert len(new_data) != 0#* To ensure list is not empty (Which would be bad)
         return new_data
     
-
+    #? This name is no longer relevant, should I rename the function?
     def list_to_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r"):
         x,y = self._dataset_to_coords(dataset,column_for_y)
         plt.scatter(x,y,color=colour)
@@ -50,17 +49,14 @@ class CsvToPlt():
                 plt.plot(x,a*x+b,color=colour)
             #*curve of best fit
             elif cobf:
-                print("Warning! curve fitting can cause issues and some graphs may not appear")
-                #fit fourth-degree polynomial
-                model4 = np.poly1d(np.polyfit(x, y, 4))
-
-#define scatterplot
+                print("Warning! curve fitting can cause issues and some graphs may not be correctly drawn")
+                raise NotImplementedError()
+                model = np.poly1d(np.polyfit(x, y, 4))
                 polyline = np.linspace(1, 15, 50)
-
-#add fitted polynomial curve to scatterplot
-                plt.plot(polyline, model4(polyline), '--', color='red')
+                plt.plot(polyline, model(polyline), '--', color='red')
                 plt.show()
-                
+                self.gradient = np.nan
+                self.y_intercept = np.nan
         except:
             print("graph failed, skipping...")
             plt.clf()
@@ -125,7 +121,7 @@ class CsvToPlt():
             )
             plt.clf()
             temp_list.append({"figure_location":getcwd()+save_name+".png","mean_and_range":self.find_mean_and_range(i),"gradient":self.gradient,"y-intercept":self.y_intercept})
-        json.dump([temp_list,self.csv_list],file)
+        dump([temp_list,self.csv_list],file)
 
 
     def plot_line(self,title:str,x_label,y_label,column_for_y:int=1,save:bool = False,save_name:str|None = None,show:bool=True,dataset:int=0,colour:str = 'b'):
