@@ -36,8 +36,7 @@ class CsvToPlt():
         assert len(new_data) != 0#* To ensure list is not empty (Which would be bad)
         return new_data
     
-    #? This name is no longer relevant, should I rename the function?
-    def list_to_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r",degree:int = 2):
+    def plot_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r",degree:int = 2):
         if cobf == True and degree <= 1:
             raise Exception("[Error] Please input a degree over 1, if you want to use a degree of 1, please use ")
         x,y = self._dataset_to_coords(dataset,column_for_y)
@@ -58,7 +57,7 @@ class CsvToPlt():
                 plt.plot(polyline, model(polyline), color=colour)
                 self.gradient = np.nan
                 self.y_intercept = np.nan
-                self.function = model
+                self.function = str(model)
         except:
             print("[ERROR] graph failed, skipping...")
             plt.clf()
@@ -97,7 +96,7 @@ class CsvToPlt():
         temp_list = []
         for i in range(1,len(self.columns)):
             save_name = f"{self.columns[i].replace('/','')}_over_{self.columns[0]}"
-            self.list_to_scatter(f"{self.columns[i]} over {self.columns[0]} graph of {subject}",
+            self.plot_scatter(f"{self.columns[i]} over {self.columns[0]} graph of {subject}",
                                  self.columns[0],
                                  self.columns[i],
                                  i,
@@ -158,5 +157,5 @@ class CsvToPlt():
 
 if __name__ == "__main__":
     data = CsvToPlt(input("Input CSV file: "),4,False)
-    data.list_to_scatter("test","time","?",2,dataset=0,cobf=True)
+    data.plot_scatter("test","time","?",2,dataset=0,cobf=True)
     #data.compile_all_data(input("Input name of output file: "),lobf=False,colour='r')
