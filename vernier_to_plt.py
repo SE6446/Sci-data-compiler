@@ -37,7 +37,9 @@ class CsvToPlt():
         return new_data
     
     #? This name is no longer relevant, should I rename the function?
-    def list_to_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r"):
+    def list_to_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r",degree:int = 2):
+        if cobf == True and degree <= 1:
+            raise Exception("[Error] Please input a degree over 1, if you want to use a degree of 1, please use ")
         x,y = self._dataset_to_coords(dataset,column_for_y)
         plt.scatter(x,y,color=colour)
         try:
@@ -51,7 +53,7 @@ class CsvToPlt():
             #*curve of best fit
             elif cobf:
                 print("[SYS NOTE] Be sure you have the correct degrees inputted")
-                model = np.poly1d(np.polyfit(x, y, 2))
+                model = np.poly1d(np.polyfit(x, y, degree))
                 polyline = np.linspace(x[0]-1, x[len(x)-1]+1)
                 plt.plot(polyline, model(polyline), color=colour)
                 self.gradient = np.nan
@@ -85,7 +87,7 @@ class CsvToPlt():
             return None
     
 
-    def compile_all_data(self,output_file,subject:str = "null",dataset:int=0,lobf:bool=True,colour:str='b'):
+    def compile_all_data(self,output_file,subject:str = "null",dataset:int=0,lobf:bool=True,colour:str='b',degree:int = 2):
         try:
             mkdir(f"{getcwd()}\\{output_file}")
         except:
@@ -105,7 +107,8 @@ class CsvToPlt():
                                  save= True,
                                  save_name= save_name,
                                  dataset=dataset,
-                                 colour=colour
+                                 colour=colour,
+                                 degree=degree
                                  )
             plt.clf()
             self.plot_line(
