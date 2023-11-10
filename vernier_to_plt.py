@@ -1,17 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.optimize as opt
 import pandas
 from math import isnan
 from statistics import mean
-import json
+from json import dump
 import re
 from os import mkdir, chdir, getcwd
 class CsvToPlt():
     def __init__(self,csv_path:str,split:int=2,abs:bool = False) -> None:
         self.csv_list = self.__csv_to_list(csv_path,split)
         self.abs = abs
-    #TODO Test the fucking multi dataset, ya melt.
+
+
     def __csv_to_list(self,csv_path,split:int) -> list:
         dataframes = pandas.read_csv(csv_path)
         columns = dataframes.columns
@@ -22,7 +22,6 @@ class CsvToPlt():
         data = dataframes.values
         new_data = []
         number_ds = int(len(new_columns)/split)
-        iteration = 0
         for h in range(0,number_ds):
             temp_list =[]
             for i in range(0,len(data)):
@@ -34,35 +33,33 @@ class CsvToPlt():
                 temp_list.append(temp_dict)
             i = 0
             new_data.append(temp_list)
-        assert len(new_data) != 0
+        assert len(new_data) != 0#* To ensure list is not empty (Which would be bad)
         return new_data
     
-
-    def list_to_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r"):
+    def plot_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r",degree:int = 2):
+        if cobf == True and degree <= 1:
+            raise Exception("[Error] Please input a degree over 1, if you want to use a degree of 1, please use ")
         x,y = self._dataset_to_coords(dataset,column_for_y)
         plt.scatter(x,y,color=colour)
-        #*line of best fit
         try:
+            #*line of best fit
             if lobf:
                 a,b = np.polyfit(x,y,1)
                 self.gradient = a
                 self.y_intercept = b
+                self.function = f"y={a}x+{b}"
                 plt.plot(x,a*x+b,color=colour)
             #*curve of best fit
             elif cobf:
-                print("Warning! curve fitting can cause issues and some graphs may not appear")
-                #fit fourth-degree polynomial
-                model4 = np.poly1d(np.polyfit(x, y, 4))
-
-#define scatterplot
-                polyline = np.linspace(1, 15, 50)
-
-#add fitted polynomial curve to scatterplot
-                plt.plot(polyline, model4(polyline), '--', color='red')
-                plt.show()
-                
+                print("[SYS NOTE] Be sure you have the correct degrees inputted")
+                model = np.poly1d(np.polyfit(x, y, degree))
+                polyline = np.linspace(x[0]-1, x[len(x)-1]+1)
+                plt.plot(polyline, model(polyline), color=colour)
+                self.gradient = np.nan
+                self.y_intercept = np.nan
+                self.function = str(model)
         except:
-            print("graph failed, skipping...")
+            print("[ERROR] graph failed, skipping...")
             plt.clf()
             return None
         plt.title(title)
@@ -85,21 +82,21 @@ class CsvToPlt():
         try:
             return mean(column), max(column) - min(column)
         except:
-            print("mean failed... returning none.")
+            print("[ERROR] mean failed... returning none.")
             return None
     
 
-    def compile_all_data(self,output_file,subject:str = "null",dataset:int=0,lobf:bool=True,colour:str='b'):
+    def compile_all_data(self,output_file,subject:str = "null",dataset:int=0,lobf:bool=True,colour:str='b',degree:int = 2):
         try:
             mkdir(f"{getcwd()}\\{output_file}")
         except:
-            print("Directory already exists...")
+            print("[ERROR] Directory already exists...")
         chdir(f"{getcwd()}\\{output_file}")
         file = open(output_file+".🧪.json","w")
         temp_list = []
         for i in range(1,len(self.columns)):
             save_name = f"{self.columns[i].replace('/','')}_over_{self.columns[0]}"
-            self.list_to_scatter(f"{self.columns[i]} over {self.columns[0]} graph of {subject}",
+            self.plot_scatter(f"{self.columns[i]} over {self.columns[0]} graph of {subject}",
                                  self.columns[0],
                                  self.columns[i],
                                  i,
@@ -109,7 +106,8 @@ class CsvToPlt():
                                  save= True,
                                  save_name= save_name,
                                  dataset=dataset,
-                                 colour=colour
+                                 colour=colour,
+                                 degree=degree
                                  )
             plt.clf()
             self.plot_line(
@@ -124,8 +122,8 @@ class CsvToPlt():
                 colour
             )
             plt.clf()
-            temp_list.append({"figure_location":getcwd()+save_name+".png","mean_and_range":self.find_mean_and_range(i),"gradient":self.gradient,"y-intercept":self.y_intercept})
-        json.dump([temp_list,self.csv_list],file)
+            temp_list.append({"figure_location":getcwd()+save_name+".png","mean_and_range":self.find_mean_and_range(i),"gradient":self.gradient,"y-intercept":self.y_intercept,"function":self.function})
+        dump([temp_list,self.csv_list],file)
 
 
     def plot_line(self,title:str,x_label,y_label,column_for_y:int=1,save:bool = False,save_name:str|None = None,show:bool=True,dataset:int=0,colour:str = 'b'):
@@ -158,6 +156,6 @@ class CsvToPlt():
 
 
 if __name__ == "__main__":
-    data = CsvToPlt(input("Input CSV file: "),3,False)
-    data.list_to_scatter("test","time","?",dataset=1,cobf=True)
+    data = CsvToPlt(input("Input CSV file: "),4,False)
+    data.plot_scatter("test","time","?",2,dataset=0,cobf=True)
     #data.compile_all_data(input("Input name of output file: "),lobf=False,colour='r')
