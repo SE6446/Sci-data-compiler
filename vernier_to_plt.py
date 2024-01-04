@@ -7,13 +7,19 @@ from json import dump
 import re
 from os import mkdir, chdir, getcwd
 class CsvToPlt():
-    def __init__(self,csv_path:str,split:int=2,abs:bool = False) -> None:
-        self.csv_list = self.__csv_to_list(csv_path,split)
+    def __init__(self,file_path:str,split:int=2,abs:bool = False,file_type:str = "csv") -> None:
+        if file_type == "csv":
+            dataframe = pandas.read_csv(file_path)
+            self.csv_list = self.__csv_to_list(dataframe,split)
+        elif file_type == "excel" or "xlsx":
+            dataframe = pandas.read_excel(file_path)
+            self.csv_list = self.__csv_to_list(dataframe)
+        else:
+            raise Exception("Invalid file type selected.")
         self.abs = abs
 
 
-    def __csv_to_list(self,csv_path,split:int) -> list:
-        dataframes = pandas.read_csv(csv_path)
+    def __csv_to_list(self,dataframes,split:int) -> list:
         columns = dataframes.columns
         new_columns = []
         for i in range(0,len(columns)):

@@ -13,7 +13,7 @@ layout  =[
     [sg.Text("Please input the number of columns in the file"),sg.InputText()],
     [sg.Text("Input name of output file"),sg.InputText((str(date.today())+"_test"))],
     [sg.Text("Input subject of graph E.g a bouncing ball"),sg.InputText()],
-    [sg.Checkbox("Use absolute?")],
+    [sg.Checkbox("Use absolute value?")],
     [sg.Text("Colour of line:")],
     [sg.Combo(['red','blue','magenta','cyan','yellow','black'],'blue')],
     [sg.Checkbox("Curve of best fit?")],
