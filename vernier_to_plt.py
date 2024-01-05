@@ -13,7 +13,7 @@ class CsvToPlt():
             self.csv_list = self.__csv_to_list(dataframe,split)
         elif file_type == "excel" or "xlsx":
             dataframe = pandas.read_excel(file_path)
-            self.csv_list = self.__csv_to_list(dataframe)
+            self.csv_list = self.__csv_to_list(dataframe,split)
         else:
             raise Exception("Invalid file type selected.")
         self.abs = abs
@@ -42,11 +42,11 @@ class CsvToPlt():
         assert len(new_data) != 0#* To ensure list is not empty (Which would be bad)
         return new_data
     
-    def plot_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r",degree:int = 2):
+    def plot_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r",degree:int = 2,yerr = 0.01,xerr=0.01):
         if cobf == True and degree <= 1:
             raise Exception("[Error] Please input a degree over 1, if you want to use a degree of 1, please use ")
         x,y = self._dataset_to_coords(dataset,column_for_y)
-        plt.scatter(x,y,color=colour)
+        plt.errorbar(x,y,yerr,xerr,color=colour, fmt= "o")
         try:
             #*line of best fit
             if lobf:
@@ -91,6 +91,8 @@ class CsvToPlt():
             print("[ERROR] mean failed... returning none.")
             return None
     
+    def barChart(self, title:str, ):
+        raise NotImplementedError()
 
     def compile_all_data(self,output_file,subject:str = "null",dataset:int=0,lobf:bool=True,colour:str='b',degree:int = 2):
         try:
@@ -162,6 +164,6 @@ class CsvToPlt():
 
 
 if __name__ == "__main__":
-    data = CsvToPlt(input("Input CSV file: "),4,False)
-    data.plot_scatter("test","time","?",2,dataset=0,cobf=True)
+    data = CsvToPlt(input("Input CSV file: "),3,False,"xlsx")
+    data.plot_scatter("test","time","?",1,dataset=0,lobf=True,xerr=1,yerr=1)
     #data.compile_all_data(input("Input name of output file: "),lobf=False,colour='r')
