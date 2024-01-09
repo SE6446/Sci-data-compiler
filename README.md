@@ -1,4 +1,4 @@
-# Vernier_data_compiler
+# Sci_data_compiler
 Turns Vernier csv data into matplotlib figures and json. I'm going to use this for my physics work. It can also be utilised on any datatable in a csv format. The exe can be used stand alone, no python required!
 
 # README.txt
