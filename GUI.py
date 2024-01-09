@@ -18,6 +18,7 @@ layout  =[
     [sg.Combo(['red','blue','magenta','cyan','yellow','black'],'blue')],
     [sg.Checkbox("Curve of best fit?")],
     [sg.Text("If using curve of best fit, please input the degrees of the polynomial E.g (x-a)^3 where 3 is inputed"),sg.InputText("3")],
+    [sg.Text("Error of x and error of y."),sg.InputText("0"),sg.InputText("0")],
     [sg.Button("Submit")],
     [sg.Text(key="element")]
 ]
@@ -30,7 +31,7 @@ while True:
     elif event == "Submit":
         file_path = values[0].strip('"')
         csv = vernier_to_plt.CsvToPlt(file_path,int(values[1]),values[4])
-        csv.compile_all_data(values[2],values[3],colour=values[5],lobf=not values[6],degree=int(values[7]))
+        csv.compile_all_data(values[2],values[3],colour=values[5],lobf=not values[6],degree=int(values[7]),xerror=int(values[8]),yerror=int(values[9]))
         window["element"].update("Processed")
     elif event == "debug":
         print("foobar")
