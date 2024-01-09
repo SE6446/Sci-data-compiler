@@ -7,13 +7,19 @@ from json import dump
 import re
 from os import mkdir, chdir, getcwd
 class CsvToPlt():
-    def __init__(self,csv_path:str,split:int=2,abs:bool = False) -> None:
-        self.csv_list = self.__csv_to_list(csv_path,split)
+    def __init__(self,file_path:str,split:int=2,abs:bool = False) -> None:
+        if file_path.endswith(".csv"):
+            dataframe = pandas.read_csv(file_path)
+            self.csv_list = self.__csv_to_list(dataframe,split)
+        elif file_path.endswith(".xlsx"):
+            dataframe = pandas.read_excel(file_path)
+            self.csv_list = self.__csv_to_list(dataframe,split)
+        else:
+            raise Exception("Invalid file type selected.")
         self.abs = abs
 
 
-    def __csv_to_list(self,csv_path,split:int) -> list:
-        dataframes = pandas.read_csv(csv_path)
+    def __csv_to_list(self,dataframes,split:int) -> list:
         columns = dataframes.columns
         new_columns = []
         for i in range(0,len(columns)):
@@ -36,11 +42,11 @@ class CsvToPlt():
         assert len(new_data) != 0#* To ensure list is not empty (Which would be bad)
         return new_data
     
-    def plot_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r",degree:int = 2):
+    def plot_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r",degree:int = 2,yerr = 0.01,xerr=0.01):
         if cobf == True and degree <= 1:
             raise Exception("[Error] Please input a degree over 1, if you want to use a degree of 1, please use ")
         x,y = self._dataset_to_coords(dataset,column_for_y)
-        plt.scatter(x,y,color=colour)
+        plt.errorbar(x,y,yerr,xerr,color=colour, fmt= "o")
         try:
             #*line of best fit
             if lobf:
@@ -85,8 +91,10 @@ class CsvToPlt():
             print("[ERROR] mean failed... returning none.")
             return None
     
+    def barChart(self, title:str, ):
+        raise NotImplementedError()
 
-    def compile_all_data(self,output_file,subject:str = "null",dataset:int=0,lobf:bool=True,colour:str='b',degree:int = 2):
+    def compile_all_data(self,output_file,subject:str = "null",dataset:int=0,lobf:bool=True,colour:str='b',degree:int = 2,xerror:int = 0,yerror:int=0):
         try:
             mkdir(f"{getcwd()}\\{output_file}")
         except:
@@ -123,6 +131,7 @@ class CsvToPlt():
             )
             plt.clf()
             temp_list.append({"figure_location":getcwd()+save_name+".png","mean_and_range":self.find_mean_and_range(i),"gradient":self.gradient,"y-intercept":self.y_intercept,"function":self.function})
+        print(getcwd())
         dump([temp_list,self.csv_list],file)
 
 
@@ -156,6 +165,6 @@ class CsvToPlt():
 
 
 if __name__ == "__main__":
-    data = CsvToPlt(input("Input CSV file: "),4,False)
-    data.plot_scatter("test","time","?",2,dataset=0,cobf=True)
+    data = CsvToPlt((input("Input CSV file: ")),3,False)
+    data.plot_scatter("test","time","?",1,dataset=0,lobf=True,xerr=1,yerr=1)
     #data.compile_all_data(input("Input name of output file: "),lobf=False,colour='r')
