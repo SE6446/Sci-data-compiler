@@ -17,7 +17,7 @@ class CsvToPlt():
         else:
             raise Exception("Invalid file type selected.")
         self.abs = abs
-
+        
 
     def __csv_to_list(self,dataframes,split:int) -> list:
         columns = dataframes.columns
@@ -42,11 +42,11 @@ class CsvToPlt():
         assert len(new_data) != 0#* To ensure list is not empty (Which would be bad)
         return new_data
     
-    def plot_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r",degree:int = 2,yerr = 0.01,xerr=0.01):
+    def plot_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r",degree:int = 2,yerr:float = 0.01,xerr:float=0.01):
         if cobf == True and degree <= 1:
             raise Exception("[Error] Please input a degree over 1, if you want to use a degree of 1, please use ")
         x,y = self._dataset_to_coords(dataset,column_for_y)
-        plt.errorbar(x,y,yerr,xerr,color=colour, fmt= "o")
+        plt.errorbar(x,y,yerr,xerr,color=colour, fmt= "o", linewidth=2, capsize=6)
         try:
             #*line of best fit
             if lobf:
@@ -94,7 +94,7 @@ class CsvToPlt():
     def barChart(self, title:str, ):
         raise NotImplementedError()
 
-    def compile_all_data(self,output_file,subject:str = "null",dataset:int=0,lobf:bool=True,colour:str='b',degree:int = 2,xerror:int = 0,yerror:int=0):
+    def compile_all_data(self,output_file,subject:str = "null",dataset:int=0,lobf:bool=True,colour:str='b',degree:int = 2,xerror:float = 0,yerror:float=0):
         try:
             mkdir(f"{getcwd()}\\{output_file}")
         except:
