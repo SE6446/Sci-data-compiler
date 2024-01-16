@@ -46,7 +46,10 @@ class CsvToPlt():
         if cobf == True and degree <= 1:
             raise Exception("[Error] Please input a degree over 1, if you want to use a degree of 1, please use ")
         x,y = self._dataset_to_coords(dataset,column_for_y)
-        plt.errorbar(x,y,yerr,xerr,color=colour, fmt= "o", linewidth=2, capsize=6)
+        if yerr !=0 and xerr != 0:
+            plt.errorbar(x,y,yerr,xerr,color=colour, fmt= "x", linewidth=2, capsize=6)
+        else:
+            plt.scatter(x,y,marker="x")
         try:
             #*line of best fit
             if lobf:
