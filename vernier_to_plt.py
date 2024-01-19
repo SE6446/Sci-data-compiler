@@ -34,7 +34,7 @@ class CsvToPlt():
                 temp_dict = {}
                 row = data[i].astype(np.float_)
                 for j in range(0,len(row)):
-                    temp_dict[self.columns[j]] = row[j]
+                    temp_dict[self.columns[j]] = row[j] #Way too many for loops but, I cannot be bothered to fix it
                 j = 0
                 temp_list.append(temp_dict)
             i = 0
@@ -91,7 +91,7 @@ class CsvToPlt():
             print("[ERROR] mean failed... returning none.")
             return None
     
-    def barChart(self, title:str, ):
+    def barChart(self, title:str, ): #TODO: ah, who am I kidding
         raise NotImplementedError()
 
     def compile_all_data(self,output_file,subject:str = "null",dataset:int=0,lobf:bool=True,colour:str='b',degree:int = 2,xerror:int = 0,yerror:int=0):
