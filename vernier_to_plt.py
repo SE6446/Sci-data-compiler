@@ -6,6 +6,8 @@ from statistics import mean
 from json import dump
 import re
 from os import mkdir, chdir, getcwd
+import argparse
+from datetime import date
 class CsvToPlt():
     def __init__(self,file_path:str,split:int=2,abs:bool = False) -> None:
         if file_path.endswith(".csv"):
@@ -17,7 +19,7 @@ class CsvToPlt():
         else:
             raise Exception("Invalid file type selected.")
         self.abs = abs
-
+        
 
     def __csv_to_list(self,dataframes,split:int) -> list:
         columns = dataframes.columns
@@ -42,11 +44,14 @@ class CsvToPlt():
         assert len(new_data) != 0#* To ensure list is not empty (Which would be bad)
         return new_data
     
-    def plot_scatter(self,title:str,x_label,y_label,column_for_y:int = 1,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r",degree:int = 2,yerr = 0.01,xerr=0.01):
+    def plot_scatter(self,title:str,x_label,y_label,column_for_y:int = 0,lobf:bool = False,cobf:bool = False,save:bool = False,save_name:str|None = None,show:bool = True,dataset:int = 0,colour:str = "r",degree:int = 2,yerr:float = 0.01,xerr:float=0.01):
         if cobf == True and degree <= 1:
             raise Exception("[Error] Please input a degree over 1, if you want to use a degree of 1, please use ")
         x,y = self._dataset_to_coords(dataset,column_for_y)
-        plt.errorbar(x,y,yerr,xerr,color=colour, fmt= "o")
+        if yerr !=0 and xerr != 0:
+            plt.errorbar(x,y,yerr,xerr,color=colour, fmt= "x", linewidth=2, capsize=6)
+        else:
+            plt.scatter(x,y,marker="x")
         try:
             #*line of best fit
             if lobf:
@@ -91,10 +96,10 @@ class CsvToPlt():
             print("[ERROR] mean failed... returning none.")
             return None
     
-    def barChart(self, title:str, ):
+    def barChart(self, title:str, ): #TODO make this
         raise NotImplementedError()
 
-    def compile_all_data(self,output_file,subject:str = "null",dataset:int=0,lobf:bool=True,colour:str='b',degree:int = 2,xerror:int = 0,yerror:int=0):
+    def compile_all_data(self,title:str|None,output_file,subject:str = "null",dataset:int=0,lobf:bool=True,colour:str='b',degree:int = 2,xerror:float = 0,yerror:float=0):
         try:
             mkdir(f"{getcwd()}\\{output_file}")
         except:
@@ -103,8 +108,8 @@ class CsvToPlt():
         file = open(output_file+".🧪.json","w")
         temp_list = []
         for i in range(1,len(self.columns)):
-            save_name = f"{self.columns[i].replace('/','')}_over_{self.columns[0]}"
-            self.plot_scatter(f"{self.columns[i]} over {self.columns[0]} graph of {subject}",
+            save_name = f"{title}_{i}" if title != None else f"{self.columns[i].replace('/','')}_over_{self.columns[0]}"
+            self.plot_scatter(title if title != None else f"{self.columns[i]} over {self.columns[0]} graph of {subject}",
                                  self.columns[0],
                                  self.columns[i],
                                  i,
@@ -115,8 +120,11 @@ class CsvToPlt():
                                  save_name= save_name,
                                  dataset=dataset,
                                  colour=colour,
-                                 degree=degree
-                                 )
+                                 degree=degree,
+                                 xerr=xerror,
+                                 yerr=yerror
+                                )
+            
             plt.clf()
             self.plot_line(
                 f"{self.columns[i]} over {self.columns[0]}",
@@ -129,10 +137,12 @@ class CsvToPlt():
                 dataset,
                 colour
             )
+            
             plt.clf()
             temp_list.append({"figure_location":getcwd()+save_name+".png","mean_and_range":self.find_mean_and_range(i),"gradient":self.gradient,"y-intercept":self.y_intercept,"function":self.function})
         print(getcwd())
         dump([temp_list,self.csv_list],file)
+        return getcwd()
 
 
     def plot_line(self,title:str,x_label,y_label,column_for_y:int=1,save:bool = False,save_name:str|None = None,show:bool=True,dataset:int=0,colour:str = 'b'):
@@ -163,8 +173,19 @@ class CsvToPlt():
                 y = np.array(y_axis)
                 return x,y
 
+parser = argparse.ArgumentParser("Sci-data-compiler")
+parser.add_argument('filename',help="The path to the file in question")
+parser.add_argument("-s","--split",help="How many datasets there are, defaults to 2.",default=2)
+parser.add_argument('-a','--absolute',help="use absolute values",action="store_true",default=False)
+parser.add_argument('-t','--title',help="Optional title of the information",default=None)
+parser.add_argument('-o','--output_file',default="test_"+str(date.today()))
+parser.add_argument('-i','--subject',help='subject of the data: i.e a bouncing ball. defaults to null')
+parser.add_argument('--cobf',help='applies a curve of best fit to your graphs', action='store_false')
+parser.add_argument('-x','--xerror',help='the absolute error on the x-axis',default=0)
+parser.add_argument('-y','--yerror',help='the error on the y axis',default=0)
+args = parser.parse_args()
 
-if __name__ == "__main__":
-    data = CsvToPlt((input("Input CSV file: ")),3,False)
-    data.plot_scatter("test","time","?",1,dataset=0,lobf=True,xerr=1,yerr=1)
-    #data.compile_all_data(input("Input name of output file: "),lobf=False,colour='r')
+
+
+data = CsvToPlt(args.filename,args.split,args.absolute)
+data.compile_all_data(args.title,args.output_file,args.subject,args.cobf,colour='b',xerror=args.xerror,yerror=args.yerror)
